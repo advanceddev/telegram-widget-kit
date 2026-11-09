@@ -1,48 +1,20 @@
-export type ThemeParams = {
-  bg_color: string;
-  text_color: string;
-  hint_color: string;
-  link_color: string;
-  button_color: string;
-  button_text_color: string;
-  secondary_bg_color: string;
-};
+/**
+ * In-process stand-in for the real Telegram widget renderer: injects a
+ * `window.TelegramWidget` SDK v1 mock, theme CSS variables and a height
+ * reporter into the preview iframe, so widgets behave like in a real chat.
+ */
 
-const THEMES: Record<'dark' | 'light', ThemeParams> = {
-  dark: {
-    bg_color: '#182533',
-    text_color: '#ffffff',
-    hint_color: '#7d8b99',
-    link_color: '#6ab2f2',
-    button_color: '#2aabee',
-    button_text_color: '#ffffff',
-    secondary_bg_color: '#232e3c',
-  },
-  light: {
-    bg_color: '#ffffff',
-    text_color: '#000000',
-    hint_color: '#999999',
-    link_color: '#2481cc',
-    button_color: '#2481cc',
-    button_text_color: '#ffffff',
-    secondary_bg_color: '#f1f1f1',
-  },
-};
+import type { ThemeParams, ColorScheme } from '@/model/telegram';
+import { THEME_PARAMS } from './themes';
 
-export function applyThemeVars(root: HTMLElement, scheme: 'dark' | 'light') {
-  const t = THEMES[scheme];
-  root.style.setProperty('--tg-theme-bg-color', t.bg_color);
-  root.style.setProperty('--tg-theme-text-color', t.text_color);
-  root.style.setProperty('--tg-theme-hint-color', t.hint_color);
-  root.style.setProperty('--tg-theme-link-color', t.link_color);
-  root.style.setProperty('--tg-theme-button-color', t.button_color);
-  root.style.setProperty('--tg-theme-button-text-color', t.button_text_color);
-  root.style.setProperty('--tg-theme-secondary-bg-color', t.secondary_bg_color);
-  root.style.setProperty('--tg-color-scheme', scheme);
-}
+const PREVIEW_BASE_CSS = `<style>
+html,body{margin:0;padding:0;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important}
+body{background:var(--tg-theme-bg-color);color:var(--tg-theme-text-color)}
+</style>`;
 
-export function telegramMockScript(scheme: 'dark' | 'light'): string {
-  const theme = THEMES[scheme];
+/** Serialised mock implementation of the SDK v1 surface (see model/telegram.ts). */
+export function telegramMockScript(scheme: ColorScheme): string {
+  const theme: ThemeParams = THEME_PARAMS[scheme];
   return `<script>
 (function(){
   var themeParams=${JSON.stringify(theme)};
@@ -91,7 +63,7 @@ export function telegramMockScript(scheme: 'dark' | 'light'): string {
   r.style.setProperty('--tg-text-line-height','1.35');
   r.style.setProperty('--tg-text-padding','8px 12px');
 
-  /* Auto-height reporter for parent playground */
+  /* Auto-height reporter for the parent playground */
   function reportHeight() {
     try {
       var body = document.body;
@@ -137,14 +109,11 @@ export function telegramMockScript(scheme: 'dark' | 'light'): string {
 </script>`;
 }
 
-const PREVIEW_BASE_CSS = `<style>
-html,body{margin:0;padding:0;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important}
-body{background:var(--tg-theme-bg-color);color:var(--tg-theme-text-color)}
-</style>`;
-
-export function wrapForPreview(html: string, scheme: 'dark' | 'light'): string {
-  const mock = telegramMockScript(scheme);
-  const headBits = mock + PREVIEW_BASE_CSS;
+/** Wraps a widget document with the SDK mock + base preview CSS. */
+export function wrapForPreview(html: string, scheme: ColorScheme): string {
+  // Links open outside the frame, like a real chat does — otherwise a click
+  // would navigate the preview iframe away from the widget document.
+  const headBits = `<base target="_blank">` + telegramMockScript(scheme) + PREVIEW_BASE_CSS;
   if (/<html[\s>]/i.test(html)) {
     if (/<head[\s>]/i.test(html)) {
       return html.replace(/<head([^>]*)>/i, `<head$1>${headBits}`);

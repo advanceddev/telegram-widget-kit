@@ -1,0 +1,49 @@
+/**
+ * Design tokens — the original playground palette, hardened into a token
+ * system with focus/motion/scrollbar additions for the polished UI.
+ */
+:root {
+  /* surfaces */
+  --bg: #0b0c0f;
+  --panel: #12141a;
+  --panel-2: #181b22;
+  --panel-3: #1e222b;
+  --border: #2a2e38;
+  --border-soft: #222630;
+
+  /* text */
+  --text: #e8eaef;
+  --muted: #8b909c;
+
+  /* accents */
+  --accent: #2aabee;
+  --accent-dim: #1a6fa0;
+  --accent-soft: rgba(42, 171, 238, 0.14);
+  --danger: #e53935;
+  --danger-soft: rgba(229, 57, 53, 0.08);
+  --warn: #f5a623;
+  --ok: #31b545;
+
+  /* chat mock */
+  --chat-dark: #0e1621;
+  --chat-light: #c8d9ea;
+
+  /* typography */
+  --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* shape & motion */
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow-overlay: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --transition-fast: 140ms ease;
+  --transition-medium: 220ms ease;
+
+  /* focus ring */
+  --focus-ring: 0 0 0 2px rgba(42, 171, 238, 0.55);
+
+  /* scrollbars */
+  --scrollbar-thumb: #2c313d;
+  --scrollbar-thumb-hover: #3a4050;
+  --scrollbar-track: transparent;
+}
