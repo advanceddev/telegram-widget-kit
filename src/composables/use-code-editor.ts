@@ -36,6 +36,12 @@ export interface CodeEditorOptions {
   language: SourcePart;
   /** Called on user edits only (never for programmatic replaces). */
   onChange(value: string): void;
+  /**
+   * Document-format shortcut (Shift+Alt+F / Shift+Option+F) pressed while
+   * this editor has focus. Matched on `event.code`, so it works on every
+   * keyboard layout and with the macOS Option modifier characters.
+   */
+  onFormatShortcut?(): void;
 }
 
 export interface CodeEditorBinding {
@@ -72,6 +78,25 @@ export function useCodeEditor(options: CodeEditorOptions): CodeEditorBinding {
       commandsModule.history(),
       keymap.of([...commandsModule.defaultKeymap, ...commandsModule.historyKeymap]),
       language,
+      // Editor-scoped format shortcut. A DOM handler (not a keymap entry)
+      // because `event.code` matching is layout- and modifier-independent:
+      // on macOS Option+F yields the key name `ƒ`, which keymaps miss.
+      View.domEventHandlers({
+        keydown(event: KeyboardEvent): boolean {
+          if (
+            event.code !== 'KeyF' ||
+            !event.shiftKey ||
+            !event.altKey ||
+            event.ctrlKey ||
+            event.metaKey
+          ) {
+            return false;
+          }
+          event.preventDefault();
+          options.onFormatShortcut?.();
+          return true;
+        },
+      }),
       View.updateListener.of((update) => {
         if (!update.docChanged || applyingExternal) {
           return;

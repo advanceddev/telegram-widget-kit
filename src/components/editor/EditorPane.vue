@@ -4,6 +4,9 @@ import { useI18n } from 'vue-i18n';
 
 import BuiltOutput from '@/components/editor/BuiltOutput.vue';
 import CodeEditor from '@/components/editor/CodeEditor.vue';
+import { useFormatter } from '@/composables/use-formatter';
+import { useHotkey } from '@/composables/use-hotkey';
+import { useNotifications } from '@/composables/use-notifications';
 import { useWidgetSources } from '@/composables/use-widget-sources';
 import type { EditorTab, SourcePart } from '@/model/widget';
 
@@ -23,9 +26,38 @@ const ALL_TABS: ReadonlyArray<TabDefinition> = [...SOURCE_TABS, BUILT_TAB];
 
 const { t } = useI18n();
 const sources = useWidgetSources();
+const formatter = useFormatter();
+const { notifyError } = useNotifications();
 
 const activeTab = ref<EditorTab>('html');
 const tablist = ref<HTMLElement | null>(null);
+
+const TAB_MESSAGE_KEYS: Record<SourcePart, string> = {
+  html: 'editor.tabHtml',
+  css: 'editor.tabCss',
+  js: 'editor.tabJs',
+};
+
+/**
+ * Formats one source part in place (overlay click, editor-scoped or global
+ * Shift+Alt+F). Syntax errors surface as a toast, sources stay untouched.
+ */
+async function onFormatPart(part: SourcePart): Promise<void> {
+  const result = await formatter.formatPart(part);
+  if (!result.ok) {
+    notifyError(t('format.error', { part: t(TAB_MESSAGE_KEYS[part]) }));
+  }
+}
+
+// Global fallback for the format shortcut (macOS ⇧⌥F / Win Shift+Alt+F)
+// when the editor itself is not focused. Inside CodeMirror the shortcut is
+// consumed by the editor-scoped handler, which sets `defaultPrevented` —
+// useHotkey ignores those, so the two never double-fire.
+useHotkey({ code: 'KeyF', shift: true, alt: true }, () => {
+  if (activeTab.value !== 'built') {
+    void onFormatPart(activeTab.value);
+  }
+});
 
 function setTab(id: EditorTab): void {
   activeTab.value = id;
@@ -96,6 +128,7 @@ function onTablistKeydown(event: KeyboardEvent): void {
           :language="tab.id"
           :active="activeTab === tab.id"
           @update:model-value="(value: string) => onSourceInput(tab.id, value)"
+          @format="onFormatPart"
         />
       </div>
 

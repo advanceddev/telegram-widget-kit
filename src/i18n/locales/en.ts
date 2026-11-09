@@ -79,6 +79,14 @@ export const en: MessageSchema = {
     loading: 'Loading editor…',
   },
 
+  format: {
+    button: 'Format',
+    title: 'Format document ({hotkey})',
+    hotkeyMac: '⇧ ⌥ F',
+    hotkeyOther: 'Shift+Alt+F',
+    error: 'Could not format {part} — check the syntax',
+  },
+
   preview: {
     title: 'Preview',
     frameTitle: 'Widget preview',
