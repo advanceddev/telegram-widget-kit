@@ -9,10 +9,14 @@
 ## Возможности
 
 - **Раздельные вкладки HTML / CSS / JS** с подсветкой (CodeMirror 6, ленивая загрузка)
-- **Build & Preview** — один HTML, минификация, zlib-9, живой предпросмотр в пузыре чата
+- **Автосборка без кнопок** — превью всегда следует за исходниками (debounce),
+  один HTML, минификация, zlib-9, живой предпросмотр в пузыре чата
+- **Форматирование (Prettier standalone, ленивый чанк)** — Shift+Option+F на macOS /
+  Shift+Alt+F на Windows/Linux (работает в любой раскладке); если документ
+  не отформатирован — в правом нижнем углу редактора появляется оверлей-кнопка
+  с подсказкой о хоткее; импортированные `.html` / `.tgw` разворачиваются в читаемый вид одним нажатием
 - **Линтер profile 1** — структурные коды нарушений + локализованные сообщения (ru/en)
 - **i18n ru + en** — переключатель в шапке сайдбара, выбор сохраняется
-- **Автосборка** — preview обновляется при наборе (debounce), переключатель в сайдбаре
 - **Resizable split** — перетаскиваемый разделитель редактор/превью (мышь + клавиатура, a11y)
 - **localStorage** — исходники, шаблон, тема, ширина, язык, экспортные поля и split
   восстанавливаются после перезагрузки
@@ -65,6 +69,7 @@ src/
 │   └── utils/              #   formatBytes
 ├── services/               # оркестрация без UI
 │   ├── build-service.ts    #   lint → assemble → minify → size → preview (race-guard)
+│   ├── format-service.ts   #   Prettier standalone (ленивые чанки), html/css/babel
 │   ├── export-service.ts   #   clipboard (с fallback), download, сборка .tgw
 │   └── persistence-service.ts # версионируемые prefs + DI storage (тестируемо)
 ├── i18n/                   # vue-i18n (legacy:false), схема сообщений из ru-локали
@@ -73,11 +78,12 @@ src/
 │   ├── use-build.ts              # lint issues, размеры, билд-артефакты
 │   ├── use-preview.ts            # scheme, width, height, previewDoc
 │   ├── use-tgw-export.ts         # форма экспорта + валидация 1024 B
-│   ├── use-settings.ts           # autoBuild, splitRatio
+│   ├── use-settings.ts           # splitRatio (автосборка — всегда включена)
 │   ├── use-notifications.ts      # тосты вместо alert()
 │   ├── use-locale.ts             # переключение ru/en
 │   ├── use-persistence-binding.ts# restore() + один debounced writer
 │   ├── use-code-editor.ts        # CodeMirror 6: ленивый import, echo-suppression
+│   ├── use-formatter.ts          # детект «не отформатирован» + formatPart (race-guard)
 │   ├── use-split-drag.ts         # pointer + keyboard resize
 │   └── ... (debounce, hotkey, event-listener, widget-height, file-picker)
 └── components/             # App, layout/, sidebar/, editor/, preview/, feedback/
@@ -88,7 +94,7 @@ src/
 ```
 набор кода → sources (composable)
           → debounce 220 мс → lint + размеры (race-guard)
-          → если autoBuild: debounce 650 мс → build()
+          → debounce 650 мс → build()  (автосборка — всегда)
 build():  assemble → minify → размеры → previewDoc (iframe) → markClean()
 Ctrl/Cmd+Enter — мгновенный build; копирование/экспорт пересобирают при dirty
 ```
@@ -111,17 +117,20 @@ Ctrl/Cmd+Enter — мгновенный build; копирование/экспо
 - **A11y**: role=tablist/tab/tabpanel с roving focus, role=separator с
   aria-valuenow, aria-live на статусе размеров и тостах, `prefers-reduced-motion`.
 - **Перф**: debounce 220/650/400 мс, один passive-слушатель `message`, teleport
-  тостов, css-токены вместо инлайн-стилей, code-splitting CodeMirror.
+  тостов, css-токены вместо инлайн-стилей, code-splitting CodeMirror и Prettier
+  (форматтер грузится при первом использовании, стартовый бандл его не тянет).
 
 ## Тесты
 
 ```
 tests/unit/          # ядро: assemble, minify, sizes+race-guard, split-html, tgw,
-                     # lint, mock/themes, шаблоны, persistence, state-композаблы
+                     # lint, mock/themes, шаблоны, persistence, state-композаблы,
+                     # format-service, use-formatter
 tests/components/    # EditorPane (ARIA/табы), CodeEditor (мок CM6: v-model + echo),
-                     # LintPanel, SizeStatsPanel, AutoBuildToggle, ToastStack
-e2e/playground.spec.ts  # Playwright: build, шаблоны, тема, язык, линт-панель,
-                        # resizable split, auto-build
+                     # format-overlay (минифицированный импорт → пилл → клик/хоткей),
+                     # LintPanel, SizeStatsPanel, ThemeField, ToastStack
+e2e/playground.spec.ts  # Playwright: автосборка, шаблоны, тема, язык, линт-панель,
+                        # resizable split, стабильность высоты пузыря
 ```
 
 ```bash
