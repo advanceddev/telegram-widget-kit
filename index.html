@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TG Widget Kit</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>TG Widget Kit</h1>
+          <span class="badge">profile 1</span>
+        </div>
+
+        <label class="field">
+          <span>Шаблон</span>
+          <select id="template-select">
+            <option value="example">example</option>
+            <option value="card">card</option>
+            <option value="counter">counter</option>
+            <option value="status">status</option>
+            <option value="converter">converter</option>
+            <option value="wallet">wallet</option>
+            <option value="cube3d">cube 3d</option>
+            <option value="poll">poll (corpus)</option>
+            <option value="ticker">ticker (corpus)</option>
+            <option value="promo">promo (corpus)</option>
+            <option value="order">order (corpus)</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Ширина пузыря <em id="width-label">320 px</em></span>
+          <input type="range" id="width-range" min="200" max="430" value="320" />
+        </label>
+
+        <label class="field row">
+          <span>Тема</span>
+          <button type="button" id="theme-toggle" class="btn sm">Dark / Light</button>
+        </label>
+
+        <details class="tgw-panel">
+          <summary>Настройки экспорта</summary>
+          <p class="tgw-note">
+            Параметры <code>inputMediaWidget</code> для бота (не внутри HTML). HTML фиксируется при
+            отправке; <code>public_data</code>/<code>chat_data</code> бот может менять позже.
+          </p>
+          <label class="field row chk"
+            ><span>allow_queries</span>
+            <input type="checkbox" id="tgw-allow-queries" />
+          </label>
+          <label class="field row chk"
+            ><span>fwd_allow_queries</span>
+            <input type="checkbox" id="tgw-fwd-queries" />
+          </label>
+          <label class="field row chk"
+            ><span>shared_widget</span>
+            <input type="checkbox" id="tgw-shared" />
+          </label>
+          <label class="field">
+            <span>width / height (0 = auto)</span>
+            <div class="pair">
+              <input type="number" id="tgw-width" value="0" min="0" max="600" />
+              <input type="number" id="tgw-height" value="0" min="0" max="600" />
+            </div>
+          </label>
+          <label class="field">
+            <span>public_data (JSON, ≤1024 B)</span>
+            <textarea id="tgw-public-data" rows="2" placeholder='{"q":"…","v":[0,0]}'></textarea>
+          </label>
+          <label class="field">
+            <span>chat_data (JSON, ≤1024 B)</span>
+            <textarea id="tgw-chat-data" rows="2" placeholder='{"best":120}'></textarea>
+          </label>
+        </details>
+
+        <div class="stats" id="stats">
+          <div class="stat-row"><span>HTML</span><strong id="size-raw">—</strong></div>
+          <div class="stat-row"><span>zlib-9</span><strong id="size-zlib">—</strong></div>
+          <div class="limit" id="size-status">—</div>
+        </div>
+
+        <div class="lint-panel" id="lint-panel" hidden>
+          <div class="lint-title">⚠ Profile violations</div>
+          <ul id="lint-list"></ul>
+        </div>
+        <div class="actions">
+          <button type="button" id="btn-build" class="btn primary">Build &amp; Preview</button>
+          <button type="button" id="btn-copy" class="btn">Копировать HTML</button>
+          <button type="button" id="btn-download" class="btn">Скачать .html</button>
+          <button type="button" id="btn-export-tgw" class="btn">Скачать .tgw</button>
+          <button type="button" id="btn-open" class="btn">Открыть файл…</button>
+          <input
+            type="file"
+            id="file-open"
+            accept=".html,.htm,.tgw,.json,text/html,application/json"
+            hidden
+          />
+        </div>
+
+        <p class="hint">
+          Раздельно: HTML · CSS · JS.<br />
+          Build собирает один файл, минифицирует и проверяет лимиты 32&nbsp;KB / 4&nbsp;KB.<br />
+          <kbd>Ctrl</kbd>+<kbd>Enter</kbd> — Build.
+        </p>
+      </aside>
+
+      <main class="main">
+        <section class="editor-pane">
+          <div class="tabs" role="tablist">
+            <button type="button" class="tab active" data-tab="html" role="tab">HTML</button>
+            <button type="button" class="tab" data-tab="css" role="tab">CSS</button>
+            <button type="button" class="tab" data-tab="js" role="tab">JS</button>
+            <button type="button" class="tab" data-tab="built" role="tab">Built</button>
+          </div>
+          <div class="editors">
+            <div class="editor-panel active" id="panel-html" data-panel="html"></div>
+            <div class="editor-panel" id="panel-css" data-panel="css"></div>
+            <div class="editor-panel" id="panel-js" data-panel="js"></div>
+            <div class="editor-panel" id="panel-built" data-panel="built">
+              <pre id="built-output" class="built-pre"></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="preview-pane">
+          <div class="preview-bar">
+            <span class="preview-label">Preview</span>
+            <span id="build-meta" class="build-meta"></span>
+          </div>
+          <div class="preview-wrap">
+            <div class="chat-mock" data-theme="dark" id="chat-mock">
+              <div class="bubble" id="bubble">
+                <iframe id="preview" title="widget preview" sandbox="allow-scripts"></iframe>
+              </div>
+              <div class="time">12:34</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
