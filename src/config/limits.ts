@@ -34,6 +34,9 @@ export const DEBOUNCE_AUTOBUILD_MS = 650;
 /** Debounce for persisting playground preferences to localStorage. */
 export const DEBOUNCE_PERSIST_MS = 400;
 
+/** Debounce for the "document is not formatted" detection (Prettier runs). */
+export const DEBOUNCE_FORMAT_CHECK_MS = 400;
+
 /** Auto-dismiss interval for toast notifications. */
 export const TOAST_DURATION_MS = 3_800;
 export const TOAST_STACK_MAX = 4;

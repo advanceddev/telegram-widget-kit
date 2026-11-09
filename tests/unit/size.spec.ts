@@ -28,7 +28,6 @@ describe('zlibSize', () => {
 
   it('falls back to an estimate when CompressionStream is unavailable', async () => {
     const original = globalThis.CompressionStream;
-    // @ts-expect-error — simulating an old WebView for the fallback branch
     vi.stubGlobal('CompressionStream', undefined);
     try {
       const z = await zlibSize('x'.repeat(1_000));

@@ -81,6 +81,14 @@ export const ru = {
     loading: 'Загрузка редактора…',
   },
 
+  format: {
+    button: 'Форматировать',
+    title: 'Форматировать документ ({hotkey})',
+    hotkeyMac: '⇧ ⌥ F',
+    hotkeyOther: 'Shift+Alt+F',
+    error: 'Не удалось отформатировать {part} — проверь синтаксис',
+  },
+
   preview: {
     title: 'Preview',
     frameTitle: 'Предпросмотр виджета',

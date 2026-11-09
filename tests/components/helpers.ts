@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { mount, type ComponentMountingOptions } from '@vue/test-utils';
 import { createAppI18n, DEFAULT_LOCALE, type AppLocale } from '@/i18n';
 
@@ -14,4 +15,12 @@ export function mountWithI18n<T>(
       plugins: [...(options.global?.plugins ?? []), createAppI18n(locale)],
     },
   });
+}
+
+/** Lets the async `onMounted` dynamic-import chains fully settle. */
+export async function flushEditor(): Promise<void> {
+  for (let i = 0; i < 5; i += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  await nextTick();
 }
